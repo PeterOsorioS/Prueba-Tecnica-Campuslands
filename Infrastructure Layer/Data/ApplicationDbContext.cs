@@ -1,10 +1,6 @@
 ﻿using Domain_Layer.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.SqlServer;
 
 namespace Infrastructure_Layer.Data
 {
@@ -23,44 +19,69 @@ namespace Infrastructure_Layer.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             // Configuracion cliente
-            builder.Entity<Cliente>()
-                .HasKey(cliente => cliente.Id);
+            builder.Entity<Cliente>(entity =>
+            {
+                entity.HasKey(cliente => cliente.Id);
 
-            builder.Entity<Cliente>()
-                .Property(cliente => cliente.Email)
+                entity.HasIndex(cliente => cliente.Nombre)
+                .IsUnique();
+
+                entity.Property(cliente => cliente.Email)
                 .IsRequired();
+
+                entity.HasIndex(cliente => cliente.Email)
+                .IsUnique();
+
+                entity.Property(u => u.FechaCreacion)
+                .HasDefaultValueSql("GETDATE()");
+            });
+
 
 
             // Configuracion Productos
-            builder.Entity<Producto>()
-                .HasKey(producto => producto.Id);
+            builder.Entity<Producto>(entity =>
+            {
+                entity.HasKey(producto => producto.Id);
+
+                entity.Property(producto => producto.Nombre)
+                .IsRequired();
+
+                entity.Property(producto => producto.Precio)
+                .IsRequired()
+                .HasDefaultValue(0);
+
+                entity.Property(producto => producto.stock)
+                .IsRequired()
+                .HasDefaultValue(0);
+            });
 
 
             // Configuracion Pedidos
-            builder.Entity<Pedido>()
-                .HasKey(pedido => pedido.Id);
+            builder.Entity<Pedido>(entity =>
+            {
+               
+               entity.HasKey(pedido => pedido.Id);
 
-            builder.Entity<Pedido>()
-                .HasOne(pedido => pedido.Cliente)
-                .WithMany(cliente => cliente.Pedidos)
-                .HasForeignKey(pedido => pedido.ClienteId);
+                entity.HasOne(pedido => pedido.Cliente)
+                    .WithMany(cliente => cliente.Pedidos)
+                    .HasForeignKey(pedido => pedido.ClienteId);
+            });
 
 
             // Configuracion PedidoProductos
-            builder.Entity<PedidoProducto>()
-                .HasKey(pedidoP => new { pedidoP.ProductoId, pedidoP.PedidoId });
+            builder.Entity<PedidoProducto>(entity =>
+            {
+                entity.HasKey(pedidoP => new { pedidoP.ProductoId, pedidoP.PedidoId });
 
-            builder.Entity<PedidoProducto>()
-              .HasOne(pedidoP => pedidoP.Pedido)
-              .WithMany(pedido => pedido.PedidoProductos)
-              .HasForeignKey(pedidoP => pedidoP.PedidoId);
+                entity.HasOne(pedidoP => pedidoP.Pedido)
+                  .WithMany(pedido => pedido.PedidoProductos)
+                  .HasForeignKey(pedidoP => pedidoP.PedidoId);
 
-            builder.Entity<PedidoProducto>()
-              .HasOne(pedidoP => pedidoP.Producto)
-              .WithMany(pedido => pedido.PedidoProductos)
-              .HasForeignKey(pedidoP => pedidoP.ProductoId);
-
-            base.OnModelCreating(builder);
+                entity.HasOne(pedidoP => pedidoP.Producto)
+                  .WithMany(pedido => pedido.PedidoProductos)
+                  .HasForeignKey(pedidoP => pedidoP.ProductoId);
+            });
+          
         }
     }
 }
