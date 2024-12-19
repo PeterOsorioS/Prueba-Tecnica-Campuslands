@@ -31,7 +31,7 @@ namespace Application_Layer.Service
             {
                 Estado = true,
                 Mensaje = "Cliente creado correctamente.",
-                Entidad = null
+                Entidad = cliente
             };
         }
     }

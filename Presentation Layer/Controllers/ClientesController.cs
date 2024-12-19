@@ -1,6 +1,7 @@
 ﻿using Application_Layer.DTOs.Response;
 using Application_Layer.Service;
 using Domain_Layer.Entities;
+using Infrastructure_Layer.Helpers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation_Layer.Controllers
@@ -10,9 +11,11 @@ namespace Presentation_Layer.Controllers
     public class ClientesController : ControllerBase
     {
         private readonly ClienteService _servicio;
-        public ClientesController(ClienteService servicio)
+        private readonly JwtUtility _jwt;
+        public ClientesController(ClienteService servicio, JwtUtility jwt)
         {
             _servicio = servicio;
+            _jwt = jwt;
         }
 
         [HttpPost]
@@ -26,8 +29,8 @@ namespace Presentation_Layer.Controllers
                 {
                     return BadRequest(response);
                 }
-
-                return Ok(response);
+                var token = _jwt.CreateToken(cliente);
+                return Ok(token);
             }
             response.Estado = false;
             response.Mensaje = "Los campos no pueden estar vacios.";
