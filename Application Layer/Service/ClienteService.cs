@@ -1,10 +1,6 @@
-﻿using Domain_Layer.Entities;
+﻿using Application_Layer.DTOs.Response;
+using Domain_Layer.Entities;
 using Domain_Layer.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application_Layer.Service
 {
@@ -16,17 +12,27 @@ namespace Application_Layer.Service
             _cliente = cliente;
         }
 
-        public async Task<string> GetCliente(Cliente cliente) 
+        public async Task<Response<Cliente>> CrearCliente(Cliente cliente) 
         {
             var emailExiste = await _cliente.GetFirstOrDefault(c => c.Email == cliente.Email);
             if (emailExiste != null) 
             {
-                throw new Exception("El email ya está registrado.");
+                return new Response<Cliente>()
+            {
+                Estado = false,
+                Mensaje = "El email ya está registrado.",
+                Entidad = null
+            };
             }
             await _cliente.Add(cliente);
             await _cliente.SaveAsync();
 
-            return "";
+            return new Response<Cliente>()
+            {
+                Estado = true,
+                Mensaje = "Cliente creado correctamente.",
+                Entidad = null
+            };
         }
     }
 }
